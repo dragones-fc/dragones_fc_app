@@ -11,16 +11,30 @@ class DragonesApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ThemeData(
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xFF17D4D4),
-        brightness: Brightness.dark,
-        primary: const Color(0xFF17D4D4),
-      ),
-      scaffoldBackgroundColor: const Color(0xFF101820),
-      textTheme: GoogleFonts.montserratTextTheme(ThemeData.dark().textTheme),
-      useMaterial3: true,
-    );
+    final theme =
+        ThemeData(
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color(0xFF17D4D4),
+            brightness: Brightness.dark,
+            primary: const Color(0xFF17D4D4),
+          ),
+          scaffoldBackgroundColor: const Color(0xFF101820),
+          textTheme: GoogleFonts.montserratTextTheme(
+            ThemeData.dark().textTheme,
+          ).apply(bodyColor: Colors.white, displayColor: Colors.white),
+          useMaterial3: true,
+        ).copyWith(
+          // Nav y botones con texto claro
+          textButtonTheme: TextButtonThemeData(
+            style: TextButton.styleFrom(foregroundColor: Colors.white),
+          ),
+          outlinedButtonTheme: OutlinedButtonThemeData(
+            style: OutlinedButton.styleFrom(foregroundColor: Colors.white),
+          ),
+          filledButtonTheme: FilledButtonThemeData(
+            style: FilledButton.styleFrom(foregroundColor: Colors.black),
+          ),
+        );
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
@@ -86,15 +100,24 @@ class _LandingPageState extends State<LandingPage> {
               const SizedBox(width: 10),
               Text(
                 'DRAGONES F.C.',
-                style: GoogleFonts.bebasNeue(fontSize: 28, letterSpacing: 2),
+                style: GoogleFonts.bebasNeue(
+                  fontSize: 28,
+                  letterSpacing: 2,
+                  color: Colors.white,
+                ),
               ),
               const Spacer(),
               Wrap(
                 spacing: 10,
                 children: items
                     .map(
-                      (i) =>
-                          TextButton(onPressed: i.onTap, child: Text(i.label)),
+                      (i) => TextButton(
+                        onPressed: i.onTap,
+                        child: Text(
+                          i.label,
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ),
                     )
                     .toList(),
               ),
@@ -116,9 +139,9 @@ class _LandingPageState extends State<LandingPage> {
               children: [
                 _HeroSection(key: _heroKey, onCta: () => _goTo(_contactoKey)),
                 _EscuelaSection(key: _escuelaKey),
-                _DividerWave(),
+                const _DividerWave(),
                 _PorterosSection(key: _porterosKey),
-                _DividerWave(flip: true),
+                const _DividerWave(flip: true),
                 _CostosSection(key: _costosKey),
                 _FemenilLibreSection(key: _femenilKey),
                 _UbicacionSection(key: _ubicacionKey),
@@ -173,6 +196,7 @@ class _HeroSection extends StatelessWidget {
                           style: GoogleFonts.bebasNeue(
                             fontSize: isWide ? 84 : 64,
                             letterSpacing: 3,
+                            color: Colors.white,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -195,7 +219,10 @@ class _HeroSection extends StatelessWidget {
                             ),
                             OutlinedButton(
                               onPressed: onCta,
-                              child: const Text('Pedir más info'),
+                              child: const Text(
+                                'Pedir más info',
+                                style: TextStyle(color: Colors.white),
+                              ),
                             ),
                           ],
                         ),
@@ -232,7 +259,7 @@ class _EscuelaSection extends StatelessWidget {
       title: 'Escuela de Futbol',
       subtitle: 'Varonil y Femenil',
       icon: Icons.sports_soccer,
-      children: [
+      children: const [
         _Bullet(
           'Centro de iniciación deportiva. “Especialistas en categorías infantiles”.',
         ),
@@ -267,6 +294,7 @@ class _PorterosSection extends StatelessWidget {
         SizedBox(height: 16),
         Text(
           'Entrenamientos especializados en todas las partes físicas y técnicas para porteros.',
+          style: TextStyle(color: Colors.white),
         ),
       ],
     );
@@ -282,7 +310,7 @@ class _CostosSection extends StatelessWidget {
       title: 'Costos',
       subtitle: 'Mensualidad',
       icon: Icons.payments,
-      headerWidget: _PriceCard(),
+      headerWidget: const _PriceCard(),
       children: const [
         SizedBox(height: 16),
         _Bullet('Extras: Entrenamientos personalizados.'),
@@ -304,6 +332,7 @@ class _FemenilLibreSection extends StatelessWidget {
       children: const [
         Text(
           'Programa especial de alto rendimiento y proyección competitiva para jugadoras entre 19 y 25 años.',
+          style: TextStyle(color: Colors.white),
         ),
       ],
     );
@@ -353,27 +382,33 @@ class _ContactoSection extends StatelessWidget {
             FilledButton.icon(
               onPressed: () =>
                   launchUrl(_wa, mode: LaunchMode.externalApplication),
-              icon: Icon(Icons.chat),
+              icon: const Icon(Icons.chat),
               label: const Text('WhatsApp'),
             ),
             OutlinedButton.icon(
               onPressed: () => launchUrl(_tel),
               icon: const Icon(Icons.call),
-              label: const Text('Llamar'),
+              label: const Text(
+                'Llamar',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
             OutlinedButton.icon(
               onPressed: () => launchUrl(_mail),
               icon: const Icon(Icons.email_outlined),
-              label: const Text('Correo'),
+              label: const Text(
+                'Correo',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         ),
         const SizedBox(height: 14),
-        Opacity(
+        const Opacity(
           opacity: 0.7,
           child: Text(
             'Horarios de atención: Lun–Vie, 10:00–19:00 hrs.',
-            style: Theme.of(context).textTheme.bodySmall,
+            style: TextStyle(color: Colors.white70),
           ),
         ),
       ],
@@ -417,6 +452,10 @@ class _Section extends StatelessWidget {
             children: [
               Row(
                 children: [
+                  const Icon(
+                    Icons.info,
+                    size: 0,
+                  ), // mantiene altura si faltan iconos
                   Icon(icon, size: 28, color: const Color(0xFF17D4D4)),
                   const SizedBox(width: 8),
                   Text(
@@ -424,6 +463,7 @@ class _Section extends StatelessWidget {
                     style: GoogleFonts.bebasNeue(
                       fontSize: 48,
                       letterSpacing: 1.5,
+                      color: Colors.white,
                     ),
                   ),
                 ],
@@ -438,7 +478,7 @@ class _Section extends StatelessWidget {
               ],
               const SizedBox(height: 18),
               DefaultTextStyle(
-                style: const TextStyle(fontSize: 16),
+                style: const TextStyle(fontSize: 16, color: Colors.white),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: children,
@@ -465,7 +505,9 @@ class _Bullet extends StatelessWidget {
         children: [
           const Icon(Icons.check_circle, size: 18, color: Color(0xFF17D4D4)),
           const SizedBox(width: 8),
-          Expanded(child: Text(text)),
+          Expanded(
+            child: Text(text, style: const TextStyle(color: Colors.white)),
+          ),
         ],
       ),
     );
@@ -484,7 +526,7 @@ class _TagRow extends StatelessWidget {
       children: tags
           .map(
             (t) => Chip(
-              label: Text(t),
+              label: Text(t, style: const TextStyle(color: Colors.white)),
               side: const BorderSide(color: Color(0xFF17D4D4)),
               backgroundColor: const Color(0xFF0E1B22),
             ),
@@ -518,7 +560,11 @@ class _PriceCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.monetization_on_outlined, size: 28),
+                  const Icon(
+                    Icons.monetization_on_outlined,
+                    size: 28,
+                    color: Colors.white,
+                  ),
                   const SizedBox(width: 10),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -533,6 +579,7 @@ class _PriceCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
                       ),
                     ],
@@ -579,6 +626,8 @@ class _DividerWave extends StatelessWidget {
 class _Footer extends StatelessWidget {
   const _Footer();
 
+  static const int year = 2025;
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -589,17 +638,15 @@ class _Footer extends StatelessWidget {
           children: [
             Image.asset('assets/images/logo_dragones.jpg', height: 40),
             const SizedBox(height: 8),
-            const Text(
-              '© $year Dragones F.C. · Coapa, MX',
-              style: TextStyle(color: Colors.white60),
+            Text(
+              '© ${_Footer.year} Dragones F.C. · Coapa, MX',
+              style: const TextStyle(color: Colors.white60),
             ),
           ],
         ),
       ),
     );
   }
-
-  static const int year = 2025;
 }
 
 class _FloatingContact extends StatelessWidget {
