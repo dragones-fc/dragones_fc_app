@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+/// === CONTACTO (centralizado) ===
+const String kPhoneE164 = '+525541829362'; // +52 5541829362
+final Uri kWhatsAppUri = Uri.parse('https://wa.me/525541829362');
+final Uri kTelUri = Uri.parse('tel:$kPhoneE164');
+
 void main() {
   runApp(const DragonesApp());
 }
@@ -24,7 +29,6 @@ class DragonesApp extends StatelessWidget {
           ).apply(bodyColor: Colors.white, displayColor: Colors.white),
           useMaterial3: true,
         ).copyWith(
-          // Nav y botones con texto claro
           textButtonTheme: TextButtonThemeData(
             style: TextButton.styleFrom(foregroundColor: Colors.white),
           ),
@@ -360,10 +364,6 @@ class _UbicacionSection extends StatelessWidget {
 class _ContactoSection extends StatelessWidget {
   const _ContactoSection({super.key});
 
-  static final Uri _wa = Uri.parse(
-    'https://wa.me/5210000000000',
-  ); // ← reemplaza
-  static final Uri _tel = Uri.parse('tel:+5210000000000'); // ← reemplaza
   static final Uri _mail = Uri.parse(
     'mailto:dragonesfc@ejemplo.mx?subject=Información',
   );
@@ -381,12 +381,12 @@ class _ContactoSection extends StatelessWidget {
           children: [
             FilledButton.icon(
               onPressed: () =>
-                  launchUrl(_wa, mode: LaunchMode.externalApplication),
+                  launchUrl(kWhatsAppUri, mode: LaunchMode.externalApplication),
               icon: const Icon(Icons.chat),
               label: const Text('WhatsApp'),
             ),
             OutlinedButton.icon(
-              onPressed: () => launchUrl(_tel),
+              onPressed: () => launchUrl(kTelUri),
               icon: const Icon(Icons.call),
               label: const Text(
                 'Llamar',
@@ -452,10 +452,7 @@ class _Section extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const Icon(
-                    Icons.info,
-                    size: 0,
-                  ), // mantiene altura si faltan iconos
+                  const Icon(Icons.info, size: 0),
                   Icon(icon, size: 28, color: const Color(0xFF17D4D4)),
                   const SizedBox(width: 8),
                   Text(
@@ -652,17 +649,14 @@ class _Footer extends StatelessWidget {
 class _FloatingContact extends StatelessWidget {
   const _FloatingContact();
 
-  static final Uri _wa = Uri.parse(
-    'https://wa.me/5210000000000',
-  ); // ← reemplaza
-
   @override
   Widget build(BuildContext context) {
     return Positioned(
       right: 16,
       bottom: 16,
       child: FloatingActionButton.extended(
-        onPressed: () => launchUrl(_wa, mode: LaunchMode.externalApplication),
+        onPressed: () =>
+            launchUrl(kWhatsAppUri, mode: LaunchMode.externalApplication),
         icon: const Icon(Icons.chat),
         label: const Text('WhatsApp'),
       ),
