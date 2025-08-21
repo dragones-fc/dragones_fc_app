@@ -11,6 +11,10 @@ void main() {
   runApp(const DragonesApp());
 }
 
+// helper para limitar valores
+double _clamp(double v, double min, double max) =>
+    v < min ? min : (v > max ? max : v);
+
 class DragonesApp extends StatelessWidget {
   const DragonesApp({super.key});
 
@@ -91,46 +95,69 @@ class _LandingPageState extends State<LandingPage> {
 
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(64),
+        preferredSize: const Size.fromHeight(76),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: const BoxDecoration(
             color: Color(0xFF0D141A),
             boxShadow: [BoxShadow(blurRadius: 8, color: Colors.black54)],
           ),
-          child: Row(
-            children: [
-              Image.asset('assets/images/logo_dragones.jpg', height: 44),
-              const SizedBox(width: 10),
-              Text(
-                'DRAGONES F.C.',
-                style: GoogleFonts.bebasNeue(
-                  fontSize: 28,
-                  letterSpacing: 2,
-                  color: Colors.white,
-                ),
-              ),
-              const Spacer(),
-              Wrap(
-                spacing: 10,
-                children: items
-                    .map(
-                      (i) => TextButton(
-                        onPressed: i.onTap,
-                        child: Text(
-                          i.label,
-                          style: const TextStyle(color: Colors.white),
+          child: LayoutBuilder(
+            builder: (context, cons) {
+              // Header 100% flexible con Wrap (2 o más líneas si es necesario)
+              return SafeArea(
+                bottom: false,
+                child: Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 12,
+                  runSpacing: 8,
+                  children: [
+                    // Marca (logo + nombre)
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Image.asset(
+                          'assets/images/logo_dragones.jpg',
+                          height: 40,
                         ),
-                      ),
-                    )
-                    .toList(),
-              ),
-              const SizedBox(width: 8),
-              FilledButton(
-                onPressed: () => _goTo(_contactoKey),
-                child: const Text('INSCRÍBETE'),
-              ),
-            ],
+                        const SizedBox(width: 10),
+                        Text(
+                          'DRAGONES F.C.',
+                          style: GoogleFonts.bebasNeue(
+                            fontSize: 26,
+                            letterSpacing: 2,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                    // Navegación + CTA (se parte en varias filas si hace falta)
+                    Wrap(
+                      alignment: WrapAlignment.end,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        ...items.map(
+                          (i) => TextButton(
+                            onPressed: i.onTap,
+                            child: Text(
+                              i.label,
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        ),
+                        FilledButton(
+                          onPressed: () => _goTo(_contactoKey),
+                          child: const Text('INSCRÍBETE'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
         ),
       ),
@@ -168,7 +195,7 @@ class _HeroSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 80, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 64, horizontal: 16),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           colors: [Color(0xFF0E1B22), Color(0xFF111E27)],
@@ -181,12 +208,18 @@ class _HeroSection extends StatelessWidget {
           constraints: const BoxConstraints(maxWidth: 1100),
           child: LayoutBuilder(
             builder: (ctx, c) {
-              final isWide = c.maxWidth > 800;
+              final isWide = c.maxWidth > 860;
+              // Tamaños responsivos con límite para evitar overflow
+              final titleSize = _clamp(c.maxWidth * 0.12, 36, 84);
+              final subtitleSize = _clamp(c.maxWidth * 0.024, 14, 20);
+              final logoHeight = _clamp(c.maxWidth * 0.28, 160, 320);
+
               return Flex(
                 direction: isWide ? Axis.horizontal : Axis.vertical,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  // Texto
                   Expanded(
                     flex: isWide ? 1 : 0,
                     child: Column(
@@ -194,28 +227,37 @@ class _HeroSection extends StatelessWidget {
                           ? CrossAxisAlignment.start
                           : CrossAxisAlignment.center,
                       children: [
-                        Text(
-                          'DRAGONES F.C.',
-                          textAlign: isWide ? TextAlign.left : TextAlign.center,
-                          style: GoogleFonts.bebasNeue(
-                            fontSize: isWide ? 84 : 64,
-                            letterSpacing: 3,
-                            color: Colors.white,
+                        // FittedBox evita desbordes en títulos largos
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: isWide
+                              ? Alignment.centerLeft
+                              : Alignment.center,
+                          child: Text(
+                            'DRAGONES F.C.',
+                            style: GoogleFonts.bebasNeue(
+                              fontSize: titleSize,
+                              letterSpacing: 3,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Coapa, MX • Escuela de Futbol',
+                          'Coapa, MX • Escuela de Fútbol',
                           textAlign: isWide ? TextAlign.left : TextAlign.center,
                           style: TextStyle(
-                            fontSize: isWide ? 20 : 18,
+                            fontSize: subtitleSize,
                             color: Colors.white70,
                           ),
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 20),
                         Wrap(
                           spacing: 12,
                           runSpacing: 12,
+                          alignment: isWide
+                              ? WrapAlignment.start
+                              : WrapAlignment.center,
                           children: [
                             FilledButton.tonal(
                               onPressed: onCta,
@@ -234,13 +276,14 @@ class _HeroSection extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 24, height: 24),
+                  // Logo
                   Expanded(
                     flex: isWide ? 1 : 0,
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Image.asset(
                         'assets/images/logo_dragones.jpg',
-                        height: isWide ? 320 : 220,
+                        height: logoHeight,
                       ),
                     ),
                   ),
@@ -260,7 +303,7 @@ class _EscuelaSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _Section(
-      title: 'Escuela de Futbol',
+      title: 'Escuela de Fútbol',
       subtitle: 'Varonil y Femenil',
       icon: Icons.sports_soccer,
       children: const [
@@ -318,7 +361,7 @@ class _CostosSection extends StatelessWidget {
       children: const [
         SizedBox(height: 16),
         _Bullet('Extras: Entrenamientos personalizados.'),
-        _Bullet('Extras: Entrenamiento funcional dirigido al futbol.'),
+        _Bullet('Extras: Entrenamiento funcional dirigido al fútbol.'),
       ],
     );
   }
@@ -378,6 +421,7 @@ class _ContactoSection extends StatelessWidget {
         Wrap(
           spacing: 12,
           runSpacing: 12,
+          alignment: WrapAlignment.start,
           children: [
             FilledButton.icon(
               onPressed: () =>
@@ -435,8 +479,12 @@ class _Section extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Padding vertical menor en móviles para evitar scroll excesivo
+    final w = MediaQuery.sizeOf(context).width;
+    final vertical = w < 420 ? 40.0 : 60.0;
+
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 16),
+      padding: EdgeInsets.symmetric(vertical: vertical, horizontal: 16),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           colors: [Color(0xFF0D141A), Color(0xFF111E27)],
@@ -450,20 +498,31 @@ class _Section extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  const Icon(Icons.info, size: 0),
-                  Icon(icon, size: 28, color: const Color(0xFF17D4D4)),
-                  const SizedBox(width: 8),
-                  Text(
-                    title,
-                    style: GoogleFonts.bebasNeue(
-                      fontSize: 48,
-                      letterSpacing: 1.5,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
+              LayoutBuilder(
+                builder: (context, c) {
+                  final titleSize = _clamp(c.maxWidth * 0.06, 28, 48);
+                  return Row(
+                    children: [
+                      Icon(icon, size: 24, color: const Color(0xFF17D4D4)),
+                      const SizedBox(width: 8),
+                      // FittedBox para que el título nunca desborde
+                      Expanded(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            title,
+                            style: GoogleFonts.bebasNeue(
+                              fontSize: titleSize,
+                              letterSpacing: 1.5,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
               if (subtitle != null) ...[
                 const SizedBox(height: 6),
@@ -538,62 +597,69 @@ class _PriceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF0B1217),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFF17D4D4).withOpacity(.5)),
-        boxShadow: const [BoxShadow(blurRadius: 16, color: Colors.black54)],
-      ),
-      padding: const EdgeInsets.all(20),
-      child: LayoutBuilder(
-        builder: (ctx, c) {
-          final isWide = c.maxWidth > 500;
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return LayoutBuilder(
+      builder: (ctx, c) {
+        final isWide = c.maxWidth > 520;
+        return Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF0B1217),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: const Color(0xFF17D4D4).withOpacity(.5)),
+            boxShadow: const [BoxShadow(blurRadius: 16, color: Colors.black54)],
+          ),
+          padding: const EdgeInsets.all(20),
+          child: Flex(
+            direction: isWide ? Axis.horizontal : Axis.vertical,
             crossAxisAlignment: isWide
                 ? CrossAxisAlignment.center
                 : CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  const Icon(
-                    Icons.monetization_on_outlined,
-                    size: 28,
-                    color: Colors.white,
-                  ),
-                  const SizedBox(width: 10),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        'Mensualidad',
-                        style: TextStyle(color: Colors.white70),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        '\$720.00 MXN',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+              Flexible(
+                fit: FlexFit.loose,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.monetization_on_outlined,
+                      size: 28,
+                      color: Colors.white,
+                    ),
+                    const SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text(
+                          'Mensualidad',
+                          style: TextStyle(color: Colors.white70),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                        SizedBox(height: 4),
+                        Text(
+                          '\$720.00 MXN',
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
+              if (isWide) const SizedBox(width: 12, height: 12),
               if (isWide)
-                const Text(
-                  'Inscripción sin costo en temporada de lanzamiento',
-                  style: TextStyle(color: Colors.white60),
-                )
-              else
-                const SizedBox.shrink(),
+                const Flexible(
+                  child: Text(
+                    'Inscripción sin costo en temporada de lanzamiento',
+                    style: TextStyle(color: Colors.white60),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
             ],
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -607,7 +673,7 @@ class _DividerWave extends StatelessWidget {
     return Transform.flip(
       flipY: flip,
       child: Container(
-        height: 40,
+        height: 32,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [Color(0xFF101820), Color(0xFF0E1B22)],
