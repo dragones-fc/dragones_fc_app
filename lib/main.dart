@@ -11,7 +11,6 @@ void main() {
   runApp(const DragonesApp());
 }
 
-// helper para limitar valores
 double _clamp(double v, double min, double max) =>
     v < min ? min : (v > max ? max : v);
 
@@ -61,6 +60,8 @@ class LandingPage extends StatefulWidget {
 }
 
 class _LandingPageState extends State<LandingPage> {
+  static const double _appBarHeight = 76;
+
   final ScrollController _scroll = ScrollController();
   final _heroKey = GlobalKey();
   final _escuelaKey = GlobalKey();
@@ -70,14 +71,21 @@ class _LandingPageState extends State<LandingPage> {
   final _ubicacionKey = GlobalKey();
   final _contactoKey = GlobalKey();
 
+  /// Scroll preciso a una sección, descontando la altura del appbar
   void _goTo(GlobalKey key) {
     final ctx = key.currentContext;
-    if (ctx == null) return;
-    Scrollable.ensureVisible(
-      ctx,
+    if (ctx == null || !_scroll.hasClients) return;
+
+    final box = ctx.findRenderObject() as RenderBox;
+    final y = box.localToGlobal(Offset.zero).dy; // posición en pantalla
+    final paddingTop = MediaQuery.of(context).padding.top;
+    final target = (_scroll.offset + y - (_appBarHeight + paddingTop + 8))
+        .clamp(0.0, _scroll.position.maxScrollExtent);
+
+    _scroll.animateTo(
+      target,
       duration: const Duration(milliseconds: 600),
       curve: Curves.easeInOutCubic,
-      alignment: 0.1,
     );
   }
 
@@ -95,69 +103,67 @@ class _LandingPageState extends State<LandingPage> {
 
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(76),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: const BoxDecoration(
-            color: Color(0xFF0D141A),
-            boxShadow: [BoxShadow(blurRadius: 8, color: Colors.black54)],
-          ),
-          child: LayoutBuilder(
-            builder: (context, cons) {
-              // Header 100% flexible con Wrap (2 o más líneas si es necesario)
-              return SafeArea(
-                bottom: false,
-                child: Wrap(
-                  alignment: WrapAlignment.spaceBetween,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  spacing: 12,
-                  runSpacing: 8,
-                  children: [
-                    // Marca (logo + nombre)
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Image.asset(
-                          'assets/images/logo_dragones.jpg',
-                          height: 40,
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          'DRAGONES F.C.',
-                          style: GoogleFonts.bebasNeue(
-                            fontSize: 26,
-                            letterSpacing: 2,
-                            color: Colors.white,
+        preferredSize: const Size.fromHeight(_appBarHeight),
+        child: Material(
+          // ← fondo real y elevación del appbar
+          color: const Color(0xFF0D141A),
+          elevation: 8,
+          child: SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: LayoutBuilder(
+                builder: (context, cons) {
+                  return Wrap(
+                    alignment: WrapAlignment.spaceBetween,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 12,
+                    runSpacing: 8,
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Image.asset(
+                            'assets/images/logo_dragones.jpg',
+                            height: 40,
                           ),
-                        ),
-                      ],
-                    ),
-                    // Navegación + CTA (se parte en varias filas si hace falta)
-                    Wrap(
-                      alignment: WrapAlignment.end,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        ...items.map(
-                          (i) => TextButton(
-                            onPressed: i.onTap,
-                            child: Text(
-                              i.label,
-                              style: const TextStyle(color: Colors.white),
+                          const SizedBox(width: 10),
+                          Text(
+                            'DRAGONES F.C.',
+                            style: GoogleFonts.bebasNeue(
+                              fontSize: 26,
+                              letterSpacing: 2,
+                              color: Colors.white,
                             ),
                           ),
-                        ),
-                        FilledButton(
-                          onPressed: () => _goTo(_contactoKey),
-                          child: const Text('INSCRÍBETE'),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              );
-            },
+                        ],
+                      ),
+                      Wrap(
+                        alignment: WrapAlignment.end,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          ...items.map(
+                            (i) => TextButton(
+                              onPressed: i.onTap,
+                              child: Text(
+                                i.label,
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ),
+                          FilledButton(
+                            onPressed: () => _goTo(_contactoKey),
+                            child: const Text('INSCRÍBETE'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
           ),
         ),
       ),
@@ -188,6 +194,8 @@ class _LandingPageState extends State<LandingPage> {
   }
 }
 
+/* ===================== HERO ===================== */
+
 class _HeroSection extends StatelessWidget {
   final VoidCallback onCta;
   const _HeroSection({super.key, required this.onCta});
@@ -209,7 +217,6 @@ class _HeroSection extends StatelessWidget {
           child: LayoutBuilder(
             builder: (ctx, c) {
               final isWide = c.maxWidth > 860;
-              // Tamaños responsivos con límite para evitar overflow
               final titleSize = _clamp(c.maxWidth * 0.12, 36, 84);
               final subtitleSize = _clamp(c.maxWidth * 0.024, 14, 20);
               final logoHeight = _clamp(c.maxWidth * 0.28, 160, 320);
@@ -219,7 +226,6 @@ class _HeroSection extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Texto
                   Expanded(
                     flex: isWide ? 1 : 0,
                     child: Column(
@@ -227,7 +233,6 @@ class _HeroSection extends StatelessWidget {
                           ? CrossAxisAlignment.start
                           : CrossAxisAlignment.center,
                       children: [
-                        // FittedBox evita desbordes en títulos largos
                         FittedBox(
                           fit: BoxFit.scaleDown,
                           alignment: isWide
@@ -276,7 +281,6 @@ class _HeroSection extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 24, height: 24),
-                  // Logo
                   Expanded(
                     flex: isWide ? 1 : 0,
                     child: Padding(
@@ -296,6 +300,8 @@ class _HeroSection extends StatelessWidget {
     );
   }
 }
+
+/* ===================== SECCIONES ===================== */
 
 class _EscuelaSection extends StatelessWidget {
   const _EscuelaSection({super.key});
@@ -460,7 +466,7 @@ class _ContactoSection extends StatelessWidget {
   }
 }
 
-/* ---------- Components ---------- */
+/* ===================== COMPONENTES BASE ===================== */
 
 class _Section extends StatelessWidget {
   final String title;
@@ -479,7 +485,6 @@ class _Section extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Padding vertical menor en móviles para evitar scroll excesivo
     final w = MediaQuery.sizeOf(context).width;
     final vertical = w < 420 ? 40.0 : 60.0;
 
@@ -505,7 +510,6 @@ class _Section extends StatelessWidget {
                     children: [
                       Icon(icon, size: 24, color: const Color(0xFF17D4D4)),
                       const SizedBox(width: 8),
-                      // FittedBox para que el título nunca desborde
                       Expanded(
                         child: FittedBox(
                           fit: BoxFit.scaleDown,
