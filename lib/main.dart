@@ -61,6 +61,7 @@ class LandingPage extends StatefulWidget {
 
 class _LandingPageState extends State<LandingPage> {
   final ScrollController _scroll = ScrollController();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   // Keys de secciones
   final _heroKey = GlobalKey();
@@ -93,6 +94,15 @@ class _LandingPageState extends State<LandingPage> {
     );
   }
 
+  // Abre el drawer (menú hamburguesa)
+  void _openMenu() => _scaffoldKey.currentState?.openEndDrawer();
+
+  // Cierra el drawer y luego navega a la sección
+  void _closeAndGoTo(GlobalKey key) {
+    Navigator.of(context).maybePop();
+    Future.delayed(const Duration(milliseconds: 220), () => _goTo(key));
+  }
+
   @override
   Widget build(BuildContext context) {
     final items = [
@@ -105,7 +115,21 @@ class _LandingPageState extends State<LandingPage> {
       _NavItem('Contacto', () => _goTo(_contactoKey)),
     ];
 
+    final width = MediaQuery.of(context).size.width;
+    final isCompact = width < 900; // umbral para usar hamburguesa
+
     return Scaffold(
+      key: _scaffoldKey,
+      endDrawer: _MenuDrawer(
+        onInicio: () => _closeAndGoTo(_heroKey),
+        onEscuela: () => _closeAndGoTo(_escuelaKey),
+        onPorteros: () => _closeAndGoTo(_porterosKey),
+        onCostos: () => _closeAndGoTo(_costosKey),
+        onFemenil: () => _closeAndGoTo(_femenilKey),
+        onUbicacion: () => _closeAndGoTo(_ubicacionKey),
+        onContacto: () => _closeAndGoTo(_contactoKey),
+        onInscribete: () => _closeAndGoTo(_contactoKey),
+      ),
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(76),
         child: Material(
@@ -137,40 +161,38 @@ class _LandingPageState extends State<LandingPage> {
                       ),
                     ],
                   ),
-                  const SizedBox(width: 12),
-                  // Navegación: una sola fila con scroll horizontal si no cabe
-                  Expanded(
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            ...items.map(
-                              (i) => Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 4,
-                                ),
-                                child: TextButton(
-                                  onPressed: i.onTap,
-                                  child: Text(
-                                    i.label,
-                                    style: const TextStyle(color: Colors.white),
-                                  ),
-                                ),
+                  const Spacer(),
+                  if (!isCompact)
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ...items.map(
+                          (i) => Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 4.0,
+                            ),
+                            child: TextButton(
+                              onPressed: i.onTap,
+                              child: Text(
+                                i.label,
+                                style: const TextStyle(color: Colors.white),
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            FilledButton(
-                              onPressed: () => _goTo(_contactoKey),
-                              child: const Text('INSCRÍBETE'),
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: 8),
+                        FilledButton(
+                          onPressed: () => _goTo(_contactoKey),
+                          child: const Text('INSCRÍBETE'),
+                        ),
+                      ],
+                    )
+                  else
+                    IconButton(
+                      tooltip: 'Menú',
+                      onPressed: _openMenu,
+                      icon: const Icon(Icons.menu, color: Colors.white),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -200,6 +222,85 @@ class _LandingPageState extends State<LandingPage> {
           const _FloatingContact(),
         ],
       ),
+    );
+  }
+}
+
+/* ===================== DRAWER (MENÚ HAMBURGUESA) ===================== */
+
+class _MenuDrawer extends StatelessWidget {
+  const _MenuDrawer({
+    required this.onInicio,
+    required this.onEscuela,
+    required this.onPorteros,
+    required this.onCostos,
+    required this.onFemenil,
+    required this.onUbicacion,
+    required this.onContacto,
+    required this.onInscribete,
+  });
+
+  final VoidCallback onInicio;
+  final VoidCallback onEscuela;
+  final VoidCallback onPorteros;
+  final VoidCallback onCostos;
+  final VoidCallback onFemenil;
+  final VoidCallback onUbicacion;
+  final VoidCallback onContacto;
+  final VoidCallback onInscribete;
+
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      backgroundColor: const Color(0xFF0D141A),
+      child: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          children: [
+            ListTile(
+              leading: Image.asset(
+                'assets/images/logo_dragones.jpg',
+                height: 28,
+              ),
+              title: Text(
+                'DRAGONES F.C.',
+                style: GoogleFonts.bebasNeue(
+                  fontSize: 22,
+                  letterSpacing: 1.5,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            const Divider(color: Colors.white24),
+
+            _drawerItem(Icons.home, 'Inicio', onInicio),
+            _drawerItem(Icons.sports_soccer, 'Escuela', onEscuela),
+            _drawerItem(Icons.sports_handball, 'Porteros', onPorteros),
+            _drawerItem(Icons.payments, 'Costos', onCostos),
+            _drawerItem(Icons.woman, 'Femenil Libre', onFemenil),
+            _drawerItem(Icons.place, 'Ubicación', onUbicacion),
+            _drawerItem(Icons.contact_phone, 'Contacto', onContacto),
+
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: FilledButton(
+                onPressed: onInscribete,
+                child: const Text('INSCRÍBETE'),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  ListTile _drawerItem(IconData icon, String label, VoidCallback onTap) {
+    return ListTile(
+      leading: Icon(icon, color: const Color(0xFF17D4D4)),
+      title: Text(label, style: const TextStyle(color: Colors.white)),
+      onTap: onTap,
     );
   }
 }
