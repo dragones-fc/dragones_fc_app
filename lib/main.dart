@@ -60,9 +60,9 @@ class LandingPage extends StatefulWidget {
 }
 
 class _LandingPageState extends State<LandingPage> {
-  static const double _appBarHeight = 76;
-
   final ScrollController _scroll = ScrollController();
+
+  // Keys de secciones
   final _heroKey = GlobalKey();
   final _escuelaKey = GlobalKey();
   final _porterosKey = GlobalKey();
@@ -71,16 +71,20 @@ class _LandingPageState extends State<LandingPage> {
   final _ubicacionKey = GlobalKey();
   final _contactoKey = GlobalKey();
 
-  /// Scroll preciso a una sección, descontando la altura del appbar
+  // Key para medir la altura REAL del app bar
+  final GlobalKey _appBarKey = GlobalKey();
+
   void _goTo(GlobalKey key) {
     final ctx = key.currentContext;
     if (ctx == null || !_scroll.hasClients) return;
 
+    final barH = _appBarKey.currentContext?.size?.height ?? 76.0;
     final box = ctx.findRenderObject() as RenderBox;
-    final y = box.localToGlobal(Offset.zero).dy; // posición en pantalla
-    final paddingTop = MediaQuery.of(context).padding.top;
-    final target = (_scroll.offset + y - (_appBarHeight + paddingTop + 8))
-        .clamp(0.0, _scroll.position.maxScrollExtent);
+    final y = box.localToGlobal(Offset.zero).dy;
+    final target = (_scroll.offset + y - barH - 8).clamp(
+      0.0,
+      _scroll.position.maxScrollExtent,
+    );
 
     _scroll.animateTo(
       target,
@@ -103,65 +107,71 @@ class _LandingPageState extends State<LandingPage> {
 
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(_appBarHeight),
+        preferredSize: const Size.fromHeight(76),
         child: Material(
-          // ← fondo real y elevación del appbar
           color: const Color(0xFF0D141A),
           elevation: 8,
           child: SafeArea(
             bottom: false,
-            child: Padding(
+            child: Container(
+              key: _appBarKey,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: LayoutBuilder(
-                builder: (context, cons) {
-                  return Wrap(
-                    alignment: WrapAlignment.spaceBetween,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    spacing: 12,
-                    runSpacing: 8,
+              child: Row(
+                children: [
+                  // Marca
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Image.asset(
-                            'assets/images/logo_dragones.jpg',
-                            height: 40,
-                          ),
-                          const SizedBox(width: 10),
-                          Text(
-                            'DRAGONES F.C.',
-                            style: GoogleFonts.bebasNeue(
-                              fontSize: 26,
-                              letterSpacing: 2,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
+                      Image.asset(
+                        'assets/images/logo_dragones.jpg',
+                        height: 40,
                       ),
-                      Wrap(
-                        alignment: WrapAlignment.end,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          ...items.map(
-                            (i) => TextButton(
-                              onPressed: i.onTap,
-                              child: Text(
-                                i.label,
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          ),
-                          FilledButton(
-                            onPressed: () => _goTo(_contactoKey),
-                            child: const Text('INSCRÍBETE'),
-                          ),
-                        ],
+                      const SizedBox(width: 10),
+                      Text(
+                        'DRAGONES F.C.',
+                        style: GoogleFonts.bebasNeue(
+                          fontSize: 26,
+                          letterSpacing: 2,
+                          color: Colors.white,
+                        ),
                       ),
                     ],
-                  );
-                },
+                  ),
+                  const SizedBox(width: 12),
+                  // Navegación: una sola fila con scroll horizontal si no cabe
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ...items.map(
+                              (i) => Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                ),
+                                child: TextButton(
+                                  onPressed: i.onTap,
+                                  child: Text(
+                                    i.label,
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            FilledButton(
+                              onPressed: () => _goTo(_contactoKey),
+                              child: const Text('INSCRÍBETE'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
