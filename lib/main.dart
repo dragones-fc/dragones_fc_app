@@ -7,6 +7,10 @@ const String kPhoneE164 = '+525541829362'; // +52 5541829362
 final Uri kWhatsAppUri = Uri.parse('https://wa.me/525541829362');
 final Uri kTelUri = Uri.parse('tel:$kPhoneE164');
 
+/// === Colores de marca ===
+const Color kTealBrand = Color(0xFF17D4D4); // Semilla
+const Color kCtaColor = kTealBrand; // CTA más llamativo de la misma paleta
+
 void main() {
   runApp(const DragonesApp());
 }
@@ -19,34 +23,37 @@ class DragonesApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme =
-        ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF17D4D4),
-            brightness: Brightness.dark,
-            primary: const Color(0xFF17D4D4),
-          ),
-          scaffoldBackgroundColor: const Color(0xFF101820),
-          textTheme: GoogleFonts.montserratTextTheme(
-            ThemeData.dark().textTheme,
-          ).apply(bodyColor: Colors.white, displayColor: Colors.white),
-          useMaterial3: true,
-        ).copyWith(
-          textButtonTheme: TextButtonThemeData(
-            style: TextButton.styleFrom(foregroundColor: Colors.white),
-          ),
-          outlinedButtonTheme: OutlinedButtonThemeData(
-            style: OutlinedButton.styleFrom(foregroundColor: Colors.white),
-          ),
-          filledButtonTheme: FilledButtonThemeData(
-            style: FilledButton.styleFrom(foregroundColor: Colors.black),
-          ),
-        );
+    final base = ThemeData(
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: kTealBrand,
+        brightness: Brightness.dark,
+        primary: kTealBrand,
+      ),
+      scaffoldBackgroundColor: const Color(0xFF101820),
+      textTheme: GoogleFonts.montserratTextTheme(
+        ThemeData.dark().textTheme,
+      ).apply(bodyColor: Colors.white, displayColor: Colors.white),
+      useMaterial3: true,
+    );
+
+    final theme = base.copyWith(
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(foregroundColor: Colors.white),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(foregroundColor: Colors.white),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        // Estilo general de FilledButton (lo sobrescribimos donde sea CTA)
+        style: FilledButton.styleFrom(foregroundColor: Colors.black),
+      ),
+    );
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Dragones F.C. | Coapa',
       theme: theme,
+      routes: {'/catalogo': (_) => const CatalogoPage()},
       home: const LandingPage(),
     );
   }
@@ -103,6 +110,11 @@ class _LandingPageState extends State<LandingPage> {
     Future.delayed(const Duration(milliseconds: 220), () => _goTo(key));
   }
 
+  // Abrir Catálogo
+  void _openCatalog() {
+    Navigator.pushNamed(context, '/catalogo');
+  }
+
   @override
   Widget build(BuildContext context) {
     final items = [
@@ -129,6 +141,7 @@ class _LandingPageState extends State<LandingPage> {
         onUbicacion: () => _closeAndGoTo(_ubicacionKey),
         onContacto: () => _closeAndGoTo(_contactoKey),
         onInscribete: () => _closeAndGoTo(_contactoKey),
+        onCatalogo: _openCatalog,
       ),
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(76),
@@ -180,8 +193,27 @@ class _LandingPageState extends State<LandingPage> {
                             ),
                           ),
                         ),
+                        // Enlace a Catálogo
+                        TextButton(
+                          onPressed: _openCatalog,
+                          child: const Text(
+                            'Catálogo',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
                         const SizedBox(width: 8),
+                        // CTA (más llamativo)
                         FilledButton(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: kCtaColor,
+                            foregroundColor: Colors.black,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            elevation: 6,
+                            shadowColor: kCtaColor.withOpacity(.6),
+                          ),
                           onPressed: () => _goTo(_contactoKey),
                           child: const Text('INSCRÍBETE'),
                         ),
@@ -238,6 +270,7 @@ class _MenuDrawer extends StatelessWidget {
     required this.onUbicacion,
     required this.onContacto,
     required this.onInscribete,
+    required this.onCatalogo,
   });
 
   final VoidCallback onInicio;
@@ -248,6 +281,7 @@ class _MenuDrawer extends StatelessWidget {
   final VoidCallback onUbicacion;
   final VoidCallback onContacto;
   final VoidCallback onInscribete;
+  final VoidCallback onCatalogo;
 
   @override
   Widget build(BuildContext context) {
@@ -280,11 +314,18 @@ class _MenuDrawer extends StatelessWidget {
             _drawerItem(Icons.woman, 'Femenil Libre', onFemenil),
             _drawerItem(Icons.place, 'Ubicación', onUbicacion),
             _drawerItem(Icons.contact_phone, 'Contacto', onContacto),
+            _drawerItem(Icons.storefront, 'Catálogo', onCatalogo),
 
             const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: kCtaColor,
+                  foregroundColor: Colors.black,
+                  elevation: 6,
+                  shadowColor: kCtaColor.withOpacity(.6),
+                ),
                 onPressed: onInscribete,
                 child: const Text('INSCRÍBETE'),
               ),
@@ -298,7 +339,7 @@ class _MenuDrawer extends StatelessWidget {
 
   ListTile _drawerItem(IconData icon, String label, VoidCallback onTap) {
     return ListTile(
-      leading: Icon(icon, color: const Color(0xFF17D4D4)),
+      leading: Icon(icon, color: kTealBrand),
       title: Text(label, style: const TextStyle(color: Colors.white)),
       onTap: onTap,
     );
@@ -375,7 +416,18 @@ class _HeroSection extends StatelessWidget {
                               ? WrapAlignment.start
                               : WrapAlignment.center,
                           children: [
-                            FilledButton.tonal(
+                            // CTA MÁS LLAMATIVO
+                            FilledButton(
+                              style: FilledButton.styleFrom(
+                                backgroundColor: kCtaColor,
+                                foregroundColor: Colors.black,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 18,
+                                  vertical: 14,
+                                ),
+                                elevation: 8,
+                                shadowColor: kCtaColor.withOpacity(.6),
+                              ),
                               onPressed: onCta,
                               child: const Text('Inscríbete ahora'),
                             ),
@@ -541,6 +593,12 @@ class _ContactoSection extends StatelessWidget {
           alignment: WrapAlignment.start,
           children: [
             FilledButton.icon(
+              style: FilledButton.styleFrom(
+                backgroundColor: kCtaColor,
+                foregroundColor: Colors.black,
+                elevation: 6,
+                shadowColor: kCtaColor.withOpacity(.6),
+              ),
               onPressed: () =>
                   launchUrl(kWhatsAppUri, mode: LaunchMode.externalApplication),
               icon: const Icon(Icons.chat),
@@ -619,7 +677,7 @@ class _Section extends StatelessWidget {
                   final titleSize = _clamp(c.maxWidth * 0.06, 28, 48);
                   return Row(
                     children: [
-                      Icon(icon, size: 24, color: const Color(0xFF17D4D4)),
+                      Icon(icon, size: 24, color: kTealBrand),
                       const SizedBox(width: 8),
                       Expanded(
                         child: FittedBox(
@@ -674,7 +732,7 @@ class _Bullet extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.check_circle, size: 18, color: Color(0xFF17D4D4)),
+          const Icon(Icons.check_circle, size: 18, color: kTealBrand),
           const SizedBox(width: 8),
           Expanded(
             child: Text(text, style: const TextStyle(color: Colors.white)),
@@ -698,7 +756,7 @@ class _TagRow extends StatelessWidget {
           .map(
             (t) => Chip(
               label: Text(t, style: const TextStyle(color: Colors.white)),
-              side: const BorderSide(color: Color(0xFF17D4D4)),
+              side: const BorderSide(color: kTealBrand),
               backgroundColor: const Color(0xFF0E1B22),
             ),
           )
@@ -719,7 +777,7 @@ class _PriceCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: const Color(0xFF0B1217),
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: const Color(0xFF17D4D4).withOpacity(.5)),
+            border: Border.all(color: kTealBrand.withOpacity(.5)),
             boxShadow: const [BoxShadow(blurRadius: 16, color: Colors.black54)],
           ),
           padding: const EdgeInsets.all(20),
@@ -849,4 +907,276 @@ class _NavItem {
   final String label;
   final VoidCallback onTap;
   _NavItem(this.label, this.onTap);
+}
+
+/* ===================== PÁGINA: CATÁLOGO ===================== */
+
+class CatalogoPage extends StatefulWidget {
+  const CatalogoPage({super.key});
+
+  @override
+  State<CatalogoPage> createState() => _CatalogoPageState();
+}
+
+class _CatalogoPageState extends State<CatalogoPage> {
+  final TextEditingController _search = TextEditingController();
+  String _categoria = 'Todos';
+
+  final List<String> _categorias = const [
+    'Todos',
+    'Jersey',
+    'Short',
+    'Medias',
+    'Portero',
+    'Combo',
+  ];
+
+  final List<_Producto> _base = const [
+    _Producto(nombre: 'Jersey Local 24/25', precio: 550),
+    _Producto(nombre: 'Jersey Visitante 24/25', precio: 550),
+    _Producto(nombre: 'Short Oficial', precio: 320),
+    _Producto(nombre: 'Medias Pro', precio: 180),
+    _Producto(nombre: 'Kit Portero', precio: 790, categoria: 'Portero'),
+    _Producto(
+      nombre: 'Combo Uniforme (J+S+M)',
+      precio: 980,
+      categoria: 'Combo',
+    ),
+  ];
+
+  Uri _waMsg(String msg) =>
+      Uri.parse('https://wa.me/525541829362?text=${Uri.encodeComponent(msg)}');
+
+  @override
+  Widget build(BuildContext context) {
+    final filtered = _base.where((p) {
+      final q = _search.text.trim().toLowerCase();
+      final byText = q.isEmpty || p.nombre.toLowerCase().contains(q);
+      final byCat = _categoria == 'Todos' || p.categoria == _categoria;
+      return byText && byCat;
+    }).toList();
+
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF0D141A),
+        elevation: 6,
+        title: const Text('Catálogo · Uniformes'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: kCtaColor,
+                foregroundColor: Colors.black,
+              ),
+              onPressed: () =>
+                  launchUrl(kWhatsAppUri, mode: LaunchMode.externalApplication),
+              child: const Text('Pedir por WhatsApp'),
+            ),
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          // Buscador + filtros
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _search,
+                    onChanged: (_) => setState(() {}),
+                    decoration: InputDecoration(
+                      hintText: 'Buscar producto…',
+                      prefixIcon: const Icon(Icons.search),
+                      filled: true,
+                      fillColor: const Color(0xFF0E1B22),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                PopupMenuButton<String>(
+                  onSelected: (v) => setState(() => _categoria = v),
+                  itemBuilder: (_) => _categorias
+                      .map((c) => PopupMenuItem(value: c, child: Text(c)))
+                      .toList(),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0E1B22),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: kTealBrand.withOpacity(.4)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.filter_alt_outlined),
+                        const SizedBox(width: 6),
+                        Text(_categoria),
+                        const Icon(Icons.keyboard_arrow_down),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 4),
+
+          // Grid responsivo
+          Expanded(
+            child: LayoutBuilder(
+              builder: (ctx, c) {
+                final w = c.maxWidth;
+                int cross = 1;
+                if (w >= 1200)
+                  cross = 4;
+                else if (w >= 900)
+                  cross = 3;
+                else if (w >= 600)
+                  cross = 2;
+
+                return GridView.builder(
+                  padding: const EdgeInsets.all(16),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: cross,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: 4 / 5,
+                  ),
+                  itemCount: filtered.length,
+                  itemBuilder: (_, i) {
+                    final p = filtered[i];
+                    return _ProductoCard(
+                      producto: p,
+                      onWhatsApp: () {
+                        final msg =
+                            'Hola, me interesa el producto "${p.nombre}" (${p.precioString}). ¿Disponible?';
+                        launchUrl(
+                          _waMsg(msg),
+                          mode: LaunchMode.externalApplication,
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Producto {
+  final String nombre;
+  final int precio; // MXN
+  final String categoria;
+  final String? imagen; // cuando te pasen fotos
+
+  const _Producto({
+    required this.nombre,
+    required this.precio,
+    this.categoria = 'Jersey',
+    this.imagen,
+  });
+
+  String get precioString => '\$${precio.toString()} MXN';
+}
+
+class _ProductoCard extends StatelessWidget {
+  final _Producto producto;
+  final VoidCallback onWhatsApp;
+
+  const _ProductoCard({required this.producto, required this.onWhatsApp});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF0B1217),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: kTealBrand.withOpacity(.4)),
+        boxShadow: const [BoxShadow(blurRadius: 10, color: Colors.black54)],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Imagen (placeholder hasta tener fotos)
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFF0E1B22),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(16),
+                ),
+              ),
+              child: producto.imagen == null
+                  ? Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(
+                            Icons.image_not_supported_outlined,
+                            size: 42,
+                            color: Colors.white38,
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            'Foto próximamente',
+                            style: TextStyle(color: Colors.white54),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(16),
+                      ),
+                      child: Image.asset(producto.imagen!, fit: BoxFit.cover),
+                    ),
+            ),
+          ),
+          // Info
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  producto.nombre,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  producto.precioString,
+                  style: const TextStyle(color: Colors.white70),
+                ),
+                const SizedBox(height: 12),
+                FilledButton.icon(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: kCtaColor,
+                    foregroundColor: Colors.black,
+                  ),
+                  onPressed: onWhatsApp,
+                  icon: const Icon(Icons.chat_bubble_outline),
+                  label: const Text('Comprar por WhatsApp'),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
